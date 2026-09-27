@@ -1,32 +1,55 @@
 # Tenda da Adoração
 
-Site institucional responsivo da igreja Tenda da Adoração, em Porto Velho (RO).
+Site da igreja Tenda da Adoração, em Porto Velho, com galeria de fotos, eventos especiais e painel de publicação adaptado para celular.
 
-## Funcionalidades
+## Recursos
 
-- Identidade visual baseada no logo da igreja.
-- Apresentação da igreja e de seus valores.
-- Agenda: Quarta da Vitória, quarta-feira às 19h30; Culto da Família, domingo às 18h.
-- Endereço com link para abrir a localização no Google Maps.
-- Layout adaptado para celulares e computadores.
-- Navegação por seções e suporte a preferências de movimento reduzido.
+- Apresentação da igreja, identidade visual e agenda de cultos regulares.
+- Galeria organizada em álbuns, com abertura das fotos em destaque.
+- Eventos especiais com título, descrição, data, horário e local.
+- Painel em `/painel`, protegido por login com ChatGPT e lista de administradores validada no servidor.
+- Rascunhos, publicação, edição, encerramento de eventos e arquivamento.
+- Upload de múltiplas fotos, compactação no navegador e armazenamento persistente.
+- Validação de imagens e bloqueio de gravações anônimas ou de origem diferente.
 
 ## Tecnologias
 
-HTML5 e CSS3, sem dependências de instalação ou compilação. As fontes DM Sans e Manrope são carregadas pelo Google Fonts, com fontes locais como alternativa.
+TypeScript, React, Vinext/Vite, componentes Shadcn, Cloudflare Workers, D1 (dados) e R2 (imagens). A hospedagem usa Sites.
 
-## Executar
+## Desenvolvimento
 
-Abra `index.html` no navegador ou sirva esta pasta com um servidor HTTP estático.
+Requer Node.js 22.13 ou superior.
+
+```sh
+npm ci
+npm run dev
+```
+
+A configuração de execução portátil é aplicada pelo helper do Sites. Use `.dev.vars` (ignorado pelo Git) para `ADMIN_EMAILS`, uma lista separada por vírgulas dos e-mails autorizados. Em desenvolvimento portátil, o login simulado usa `seedy@sites.test`; esse usuário não é permitido em produção a menos que seja configurado explicitamente.
+
+Depois de gerar o build, aplique as migrações em ordem no banco **local** antes de testar a persistência:
+
+```sh
+npm run build
+node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_brainy_squadron_supreme.sql
+```
+
+## Publicação
+
+A configuração `.openai/hosting.json` declara os vínculos lógicos `DB` e `BUCKET`. Sites provisiona os recursos e aplica as migrações durante a publicação. Configure `ADMIN_EMAILS` no ambiente de produção, como segredo. Não salve credenciais no código. O controle de quem pode visitar o site é separado da permissão para editar conteúdo no painel.
 
 ## Estrutura
 
-- `index.html`: conteúdo e navegação.
-- `styles.css`: identidade visual e responsividade.
-- `logo.jpeg`: logo fornecido pela igreja.
+- `app/page.tsx`: página institucional.
+- `app/community.tsx`: eventos e galeria.
+- `app/painel/`: painel protegido.
+- `app/api/`: operações de dados e imagens.
+- `lib/`: autorização, validação, tipos e acesso aos dados.
+- `db/schema.ts` e `drizzle/`: esquema e migrações.
+- `public/`: logo e favicon.
 
-## Informações da igreja
+## Validação
 
-Rua Cartuana, 548 — Tiradentes, Porto Velho — RO.
+Verificação de tipos e compilação de produção. Fluxos de criação, publicação e arquivamento testados com banco local. Upload e exibição de álbum testados no navegador. Acesso anônimo ao painel de dados e gravação de origem diferente bloqueados em testes locais.
 
-O logo e a identidade da igreja pertencem aos seus respectivos titulares.
+O logo e a identidade da igreja pertencem aos respectivos titulares.
