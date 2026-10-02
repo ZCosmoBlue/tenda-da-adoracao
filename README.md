@@ -27,12 +27,7 @@ npm run dev
 
 A configuração de execução portátil é aplicada pelo helper do Sites. Use `.dev.vars` (ignorado pelo Git) para `ADMIN_EMAILS`, uma lista separada por vírgulas dos e-mails autorizados. Em desenvolvimento portátil, o login simulado usa `seedy@sites.test`; esse usuário não é permitido em produção a menos que seja configurado explicitamente.
 
-Depois de gerar o build, aplique as migrações em ordem no banco **local** antes de testar a persistência:
-
-```sh
-npm run build
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_brainy_squadron_supreme.sql
-```
+O comando `npm run db:setup` aplica as migrações pendentes somente no banco local, sem apagar os dados existentes. Execute após clonar o projeto e quando houver novas migrações. No PowerShell, use `npm.cmd` se a execução de scripts estiver bloqueada.
 
 ## Publicação
 
