@@ -1,11 +1,10 @@
-import { env } from 'cloudflare:workers';
-import { getChatGPTUser } from '@/app/chatgpt-auth';
+import {currentAccount} from './auth';
 export class ApiError extends Error { constructor(public status:number,message:string){super(message);} }
 export async function isAdmin(){
- const user=await getChatGPTUser();
- const allowed=(env.ADMIN_EMAILS??'').split(',').map((s:string)=>s.trim().toLowerCase()).filter(Boolean);
- return user && allowed.includes(user.email.toLowerCase()) ? user : null;
+ return currentAccount();
 }
+export async function requireOwner(request?:Request){const user=await authorize(request);if(user.role!=='owner')throw new ApiError(403,'Somente o administrador pode gerenciar contas e informações da igreja.');return user;}
+export function checkOrigin(request:Request){if(request.headers.get('origin')!==new URL(request.url).origin)throw new ApiError(403,'Origem inválida. Reabra a página.');}
 export async function authorize(request?:Request){
  const user=await isAdmin(); if(!user) throw new ApiError(403,'Entre com uma conta autorizada para administrar o site.');
  if(request && !['GET','HEAD'].includes(request.method)) {
