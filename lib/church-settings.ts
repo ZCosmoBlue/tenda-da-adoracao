@@ -1,0 +1,2 @@
+export type ChurchSettings={address:string;mapsUrl:string;whatsapp:string;instagram:string;services:{name:string;day:string;time:string}[];notice:{enabled:boolean;title:string;message:string;expiresAt:string}};
+export const defaults:ChurchSettings={address:'Rua Cartuana, 548 · Bairro Tiradentes, Porto Velho – RO',mapsUrl:'https://share.google/RrtZJTlgWCbqVk4k4',whatsapp:'',instagram:'',services:[{name:'Quarta da Vitória',day:'QUARTA-FEIRA',time:'19:30'},{name:'Culto da Família',day:'DOMINGO',time:'18:00'}],notice:{enabled:false,title:'',message:'',expiresAt:''}};

@@ -48,3 +48,7 @@ A configuração `.openai/hosting.json` declara os vínculos lógicos `DB` e `BU
 Verificação de tipos e compilação de produção. Fluxos de criação, publicação e arquivamento testados com banco local. Upload e exibição de álbum testados no navegador. Acesso anônimo ao painel de dados e gravação de origem diferente bloqueados em testes locais.
 
 O logo e a identidade da igreja pertencem aos respectivos titulares.
+
+## Administração de conteúdo
+
+Em `/administrador`, a primeira foto define a capa. Use os botões de ordem e os campos de legenda, depois salve a publicação. A seção Informações e avisos edita endereço, link do mapa, contatos e cultos; avisos ativos aparecem na página inicial e deixam de aparecer após o término configurado no horário de Porto Velho. Ao atualizar uma cópia local, execute `npm.cmd run db:setup` para aplicar as migrações pendentes.

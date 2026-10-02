@@ -8,5 +8,7 @@ export const entries = sqliteTable('entries', {
 export const photos = sqliteTable('photos', {
  id: text('id').primaryKey(), entryId: text('entry_id').notNull().references(()=>entries.id),
  objectKey: text('object_key').notNull(), mime: text('mime').notNull(), size: integer('size').notNull(),
- caption: text('caption').notNull().default(''), createdAt: text('created_at').notNull(),
+ sortOrder: integer('sort_order').notNull().default(0), caption: text('caption').notNull().default(''), createdAt: text('created_at').notNull(),
 }, t=>[index('idx_photos_entry').on(t.entryId)]);
+
+export const settings = sqliteTable('settings', {id: text('id').primaryKey(), value: text('value').notNull()});
