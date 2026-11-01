@@ -10,11 +10,12 @@ export default function ScrollReveal(){
   const seen=new WeakSet<Element>();
   const animations=new Set<Animation>();
   const observer=new IntersectionObserver(items=>{
+   let order=0;
    for(const item of items){
     if(!item.isIntersecting)continue;
     observer.unobserve(item.target);
     if(motion.matches||!(item.target instanceof HTMLElement)||!item.target.animate)continue;
-    const animation=item.target.animate([{opacity:.25,transform:'translateY(20px)'},{opacity:1,transform:'translateY(0)'}],{duration:650,easing:'cubic-bezier(.22,1,.36,1)'});
+    const animation=item.target.animate([{opacity:.15,transform:'translateY(32px)'},{opacity:1,transform:'translateY(0)'}],{duration:850,delay:Math.min(order++ * 75,225),easing:'cubic-bezier(.22,1,.36,1)'});
     animations.add(animation);
     animation.onfinish=()=>animations.delete(animation);
    }
@@ -27,3 +28,4 @@ export default function ScrollReveal(){
  },[]);
  return null;
 }
+
