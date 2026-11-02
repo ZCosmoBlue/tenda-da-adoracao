@@ -256,3 +256,5 @@ body {
 .publication-checklist{margin-top:28px;padding:20px;border:1px solid #a7bba9;border-radius:10px}.publication-checklist h3{font-size:18px}.publication-checklist ul{list-style:none;padding:0;margin:14px 0}.publication-checklist li{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;padding:6px 0}.publication-checklist li>span:nth-child(2){flex:1}.publication-checklist li>button{min-height:40px}.publication-checklist p{font-size:13px;line-height:1.6}
 
 .library-entry-actions{display:flex;flex-wrap:wrap;gap:8px;flex-shrink:0}@media(max-width:650px){.library-entry-actions{width:100%;justify-content:flex-end}.library-entry-actions button{flex:1}}
+
+.draft-recovery{padding:24px;margin:0 0 24px;border:1px solid #a7bba9;border-radius:12px;background:#eaf0e9;color:#183e2d}.draft-recovery h2{font-size:25px;letter-spacing:-.7px}.draft-recovery p{font-size:14px;margin:12px 0;overflow-wrap:anywhere}.draft-recovery>div{display:flex;gap:12px;flex-wrap:wrap}.draft-recovery button{min-height:44px}.draft-save-status{font-size:13px;margin:16px 0;padding:12px;border-left:3px solid #7a9b80}.draft-recovery button{background:#fff;color:#183e2d}
