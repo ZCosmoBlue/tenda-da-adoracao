@@ -15,12 +15,12 @@ export default function ScrollReveal(){
     if(!item.isIntersecting)continue;
     observer.unobserve(item.target);
     if(motion.matches||!(item.target instanceof HTMLElement)||!item.target.animate)continue;
-    const animation=item.target.animate([{opacity:.15,transform:'translateY(32px)'},{opacity:1,transform:'translateY(0)'}],{duration:850,delay:Math.min(order++ * 75,225),easing:'cubic-bezier(.22,1,.36,1)'});
+    const animation=item.target.animate([{opacity:.35,transform:'translateY(18px)'},{opacity:1,transform:'translateY(0)'}],{duration:600,delay:Math.min(order++ * 55,165),easing:'cubic-bezier(.22,1,.36,1)'});
     animations.add(animation);
     animation.onfinish=()=>animations.delete(animation);
    }
   },{threshold:0,rootMargin:'0px 0px -24px 0px'});
-  const scan=()=>root.querySelectorAll('.section-label,.essence-grid,.family-heading,.values article,.service-list article,.story-card,.gallery-section>h2,.welcome>h2,.welcome>p,.welcome>address').forEach(el=>{if(!seen.has(el)){seen.add(el);observer.observe(el);}});
+  const scan=()=>root.querySelectorAll('.section-label,.essence-grid,.family-heading,.values article,.service-list article,.story-card,.gallery-section>h2,.welcome>h2,.welcome>p,.welcome>address,.visit-intro,.visit-guide article,.featured-event').forEach(el=>{if(!seen.has(el)){seen.add(el);observer.observe(el);}});
   const stop=()=>{if(motion.matches){animations.forEach(a=>a.cancel());animations.clear();}};
   const updates=new MutationObserver(scan);
   scan();updates.observe(root,{childList:true,subtree:true});motion.addEventListener('change',stop);
