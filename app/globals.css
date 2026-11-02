@@ -252,3 +252,5 @@ body {
 @media(prefers-reduced-motion:reduce){.publication-preview-dialog,.publication-preview-dialog *{animation:none!important;transition:none!important}}
 
 .publication-preview-dialog button{color:#183e2d;background:#fff;border:1px solid #a2b4a5}.publication-preview-dialog button[aria-pressed=true]{background:#183e2d;color:#fff;border-color:#183e2d}.publication-preview-dialog .viewer-frame img{width:100%;object-fit:contain}
+
+.publication-checklist{margin-top:28px;padding:20px;border:1px solid #a7bba9;border-radius:10px}.publication-checklist h3{font-size:18px}.publication-checklist ul{list-style:none;padding:0;margin:14px 0}.publication-checklist li{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;padding:6px 0}.publication-checklist li>span:nth-child(2){flex:1}.publication-checklist li>button{min-height:40px}.publication-checklist p{font-size:13px;line-height:1.6}
