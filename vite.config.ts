@@ -66,3 +66,5 @@ export default defineConfig(async () => {
     ],
   };
 });
+
+// Authentication is handled exclusively by Supabase.

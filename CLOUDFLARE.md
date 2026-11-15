@@ -32,10 +32,8 @@ npx wrangler deploy --config dist/server/wrangler.cloudflare.json
 
 O último comando retorna o endereço público `workers.dev`. Confira a página inicial, as chaves Pix, o login e uma publicação de teste antes de divulgar.
 
-## Primeiro administrador
+## Acesso administrativo
 
-Uma base nova precisa de `OWNER_EMAIL` e `ADMIN_SETUP_TOKEN` configurados como secrets no Worker. Use os campos protegidos do painel Cloudflare ou `wrangler secret put`; não coloque os valores no Git, em prints ou nesta documentação. O token precisa ter 64 caracteres hexadecimais aleatórios. A senha deve ser escolhida pelo administrador na tela `/administrador/configurar#TOKEN`.
+O login agora usa exclusivamente Supabase. Configure SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY no ambiente do Worker, aplique o SQL de acesso e homologue uma conta autorizada. OWNER_EMAIL e ADMIN_SETUP_TOKEN não são mais utilizados. Veja SUPABASE.md.
 
-Depois de configurar a conta, remova o secret `ADMIN_SETUP_TOKEN`. Uma base que já tem administrador deve usar o login existente.
-
-As alterações no GitHub só chegam à Cloudflare depois de uma publicação ou da configuração explícita de uma integração de build.
+As alterações no GitHub não publicam automaticamente na Cloudflare.

@@ -4,7 +4,7 @@ Projeto da igreja: `auxerealyxqvyecmueor`.
 
 ## Etapa atual
 
-O proprietário criou a tabela `church_members` com RLS e vinculou sua conta Auth à função `owner`. O código contém integração de login, renovação de cookies, verificação de sessão, logout, alteração de senha e autorização/bloqueio de editoras. A ativação é explícita por `AUTH_PROVIDER=supabase`; sem essa variável, permanece o acesso anterior. Não há fallback para o login antigo quando Supabase está ativo.
+O proprietário criou a tabela `church_members` com RLS e vinculou sua conta Auth à função `owner`. O código contém integração de login, renovação de cookies, verificação de sessão, logout, alteração de senha e autorização/bloqueio de editoras. O login é exclusivamente Supabase. Não há seleção de provedor nem fallback para credenciais antigas. Sem configuração válida, o acesso é negado.
 
 Antes de ativar, execute `supabase/setup-access.sql` no SQL Editor do projeto correto. Ele preserva contas e senhas e cria funções de acesso. O resultado final deve conter quatro funções públicas, sem permissão de execução para `anon` e com execução para `authenticated`. As funções privilegiadas ficam no esquema não exposto `church_private`, verificando usuário, sessão atual, e-mail confirmado e permissão atual no banco.
 
@@ -13,7 +13,6 @@ Antes de ativar, execute `supabase/setup-access.sql` no SQL Editor do projeto co
 Defina em `.dev.vars` local ou no ambiente da hospedagem:
 
 ```dotenv
-AUTH_PROVIDER=supabase
 SUPABASE_URL=https://SEU_PROJETO.supabase.co
 SUPABASE_PUBLISHABLE_KEY=sb_publishable_SUA_CHAVE
 ```
@@ -28,7 +27,7 @@ Não use chave secreta/service_role no navegador. A implementação usa somente 
 4. Confirmar que a editora publica, mas não gerencia contas/configurações.
 5. Bloquear a editora e verificar que sua sessão perde acesso. Reativá-la exige novo login.
 6. Testar logout, renovação de sessão e troca de senha; não apenas a compilação.
-7. Só depois arquivar a configuração antiga. Não excluir contas nem banco antes de backup.
+7. Homologar o acesso positivo com a senha do Supabase. A conta e a sessão legadas do banco local foram removidas por solicitação do proprietário; os dados de conteúdo foram preservados.
 
 ## Limites desta etapa
 

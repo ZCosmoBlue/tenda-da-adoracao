@@ -1,9 +1,9 @@
 import {NextResponse,type NextRequest} from 'next/server';
 import {createServerClient} from '@supabase/ssr';
-import {supabaseConfig,usesSupabaseAuth} from './lib/supabase-config';
+import {supabaseConfig} from './lib/supabase-config';
 
 export async function middleware(request:NextRequest){
- if(!usesSupabaseAuth())return NextResponse.next();
+
  const {url,key}=supabaseConfig();
  let response=NextResponse.next({request});
  const client=createServerClient(url,key,{
