@@ -1,10 +1,13 @@
 import {headers} from 'next/headers';
 import {database} from './storage';
 import {digest,randomToken} from './password';
+import {usesSupabaseAuth} from './supabase-config';
+import {supabaseServer,supabaseAccount} from './supabase-server';
 
 export type Account={userId:string;email:string;name:string;role:'owner'|'editor'};
 export function sessionToken(cookie:string|null){return cookie?.split(';').map(s=>s.trim()).find(s=>s.startsWith('tenda_session='))?.slice(14)||'';}
 export async function currentAccount():Promise<Account|null>{
+ if(usesSupabaseAuth())return supabaseAccount((await supabaseServer()).client);
  const token=sessionToken((await headers()).get('cookie'));if(!/^[a-f0-9]{64}$/.test(token))return null;
  return database().prepare('SELECT u.id AS userId,u.email,u.name,u.role FROM auth_sessions s JOIN auth_users u ON u.id=s.user_id WHERE s.token_hash=? AND s.expires_at>? AND u.enabled=1 AND u.password_hash<>?').bind(digest(token),Date.now(),'').first<Account>();
 }

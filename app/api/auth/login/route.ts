@@ -4,9 +4,12 @@ import {checkOrigin,failure,ApiError} from '@/lib/security';
 import {input,emailInput,limit,requestLimit} from '@/lib/auth-input';
 import {verifyPassword} from '@/lib/password';
 import {createSession} from '@/lib/auth';
+import {usesSupabaseAuth} from '@/lib/supabase-config';
+import {supabaseLogin} from '@/lib/supabase-auth-actions';
 export async function POST(request:Request){try{
  checkOrigin(request);await requestLimit(request);
  const data=await input(request,z.object({email:emailInput,password:z.string().min(1).max(128)}));await limit('login:'+data.email);
+ if(usesSupabaseAuth())return supabaseLogin(request,data.email,data.password);
  const user=await database().prepare('SELECT id,password_hash,enabled FROM auth_users WHERE email=?').bind(data.email).first<{id:string;password_hash:string;enabled:number}>();
  const valid=await verifyPassword(data.password,user?.password_hash||'');
  if(!user||!user.enabled||!valid)throw new ApiError(401,'E-mail ou senha incorretos.');

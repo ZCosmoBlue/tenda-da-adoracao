@@ -4,9 +4,12 @@ import {input,passwordInput,limit} from '@/lib/auth-input';
 import {database} from '@/lib/storage';
 import {hashPassword,verifyPassword} from '@/lib/password';
 import {sessionCookie} from '@/lib/auth';
+import {usesSupabaseAuth} from '@/lib/supabase-config';
+import {supabasePassword} from '@/lib/supabase-auth-actions';
 export async function POST(request:Request){try{
  const user=await authorize(request);await limit('password:'+user.userId);
  const data=await input(request,z.object({current:z.string().min(1).max(128),password:passwordInput}));
+ if(usesSupabaseAuth())return supabasePassword(request,user.email,data.current,data.password);
  const stored=await database().prepare('SELECT password_hash FROM auth_users WHERE id=?').bind(user.userId).first<{password_hash:string}>();
  if(!stored||!await verifyPassword(data.current,stored.password_hash))throw new ApiError(400,'A senha atual está incorreta.');
  const hash=await hashPassword(data.password);

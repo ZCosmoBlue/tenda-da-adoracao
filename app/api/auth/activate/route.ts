@@ -4,8 +4,10 @@ import {database} from '@/lib/storage';
 import {checkOrigin,failure,ApiError,json} from '@/lib/security';
 import {input,emailInput,passwordInput,requestLimit,limit} from '@/lib/auth-input';
 import {hashPassword,digest,equalSecret} from '@/lib/password';
+import {usesSupabaseAuth} from '@/lib/supabase-config';
 export async function POST(request:Request){try{
  checkOrigin(request);await requestLimit(request);
+ if(usesSupabaseAuth())throw new ApiError(410,'Este link antigo foi desativado. Use sua conta autorizada do Supabase.');
  const data=await input(request,z.object({email:emailInput,password:passwordInput,token:z.string().regex(/^[a-f0-9]{64}$/),setup:z.boolean().default(false)}));
  await limit('activate:'+data.email);
  const db=database();
