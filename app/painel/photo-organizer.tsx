@@ -1,0 +1,31 @@
+'use client';
+import {useRef,useState} from 'react';
+import {Button} from '@/components/ui/button';
+import {Input} from '@/components/ui/input';
+import {Dialog,DialogContent,DialogTitle,DialogDescription,DialogClose} from '@/components/ui/dialog';
+import type {Photo} from '@/lib/models';
+
+type Props={photos:Photo[];disabled:boolean;onMove:(from:number,to:number)=>void;onRemove:(photo:Photo)=>void;onRemoveMany:(photos:Photo[])=>void;onCaption:(id:string,caption:string)=>void};
+export default function PhotoOrganizer({photos,disabled,onMove,onRemove,onRemoveMany,onCaption}:Props){
+ const source=useRef<string|null>(null);
+ const [target,setTarget]=useState<string|null>(null);
+ const [announcement,setAnnouncement]=useState('');
+ const [selected,setSelected]=useState<Set<string>>(new Set());
+ const [viewing,setViewing]=useState<string|null>(null);
+ const selectedPhotos=photos.filter(photo=>selected.has(photo.id));
+ const viewIndex=photos.findIndex(photo=>photo.id===viewing);
+ const viewed=photos[viewIndex];
+ function navigate(step:number){if(photos.length)setViewing(photos[(viewIndex+step+photos.length)%photos.length].id);}
+ function move(from:number,to:number){if(disabled||from===to||from<0||to<0||to>=photos.length)return;onMove(from,to);setAnnouncement(`Foto ${from+1} movida para a posição ${to+1}.${to===0?' Esta é a nova capa.':''} Salve para aplicar.`);}
+ function finish(){source.current=null;setTarget(null);}
+ if(!photos.length)return null;
+ return <section className="photo-organizer" aria-label="Organizar fotos"><h3>Organize seu álbum</h3><p>Arraste pelo botão “Mover” até outra foto no computador, ou use os botões abaixo de cada imagem. A primeira foto será a capa. Salve para aplicar.</p><p className="sr-only" role="status" aria-live="polite">{announcement}</p><div className="photo-selection-toolbar"><span role="status">{selectedPhotos.length} foto(s) selecionada(s)</span><Button type="button" variant="outline" disabled={disabled} onClick={()=>setSelected(selectedPhotos.length===photos.length?new Set():new Set(photos.map(photo=>photo.id)))}>{selectedPhotos.length===photos.length?'Desmarcar todas':'Selecionar todas'}</Button><Button type="button" variant="outline" disabled={disabled||!selectedPhotos.length} onClick={()=>onRemoveMany(selectedPhotos)}>Remover selecionadas ({selectedPhotos.length})</Button></div><div className="photo-preview organized-photos">{photos.map((photo,index)=><div key={photo.id} className={'organized-photo'+(index===0?' is-cover':'')+(target===photo.id?' drop-target':'')} onDragOver={event=>{if(disabled||!source.current)return;event.preventDefault();event.dataTransfer.dropEffect='move';setTarget(photo.id);}} onDrop={event=>{if(disabled||!source.current)return;event.preventDefault();const from=photos.findIndex(item=>item.id===source.current);finish();move(from,index);}}>
+  <label className="photo-select"><input type="checkbox" disabled={disabled} checked={selected.has(photo.id)} onChange={event=>{const checked=event.target.checked;setSelected(previous=>{const next=new Set(previous);if(checked)next.add(photo.id);else next.delete(photo.id);return next;});}}/>Selecionar foto {index+1}</label>
+  <div className="organizer-image"><img draggable={false} src={'/api/media/'+photo.id} alt={photo.caption||'Foto '+(index+1)}/><span className="organizer-badge">{index===0?'★ Capa do álbum':`Foto ${index+1}`}</span></div>
+  <Button type="button" variant="outline" disabled={disabled} onClick={()=>setViewing(photo.id)} aria-label={'Ampliar foto '+(index+1)}>Ampliar foto</Button>
+  <button type="button" className="photo-drag-handle" disabled={disabled} draggable={!disabled} aria-label={'Mover foto '+(index+1)+'. Use Alt e as setas para reordenar.'} onDragStart={event=>{if(disabled){event.preventDefault();return;}source.current=photo.id;event.dataTransfer.effectAllowed='move';event.dataTransfer.setData('text/plain',photo.id);}} onDragEnd={finish} onKeyDown={event=>{if(!event.altKey||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(event.key))return;event.preventDefault();move(index,index+(['ArrowLeft','ArrowUp'].includes(event.key)?-1:1));}}>⠿ Mover</button>
+  <label htmlFor={'caption-'+photo.id}>Legenda</label><Input disabled={disabled} id={'caption-'+photo.id} maxLength={240} value={photo.caption} onChange={event=>onCaption(photo.id,event.target.value)}/>
+  <div className="photo-order"><Button type="button" variant="outline" size="sm" disabled={disabled||index===0} onClick={()=>move(index,0)}>{index===0?'Capa selecionada':'Usar como capa'}</Button><Button type="button" variant="outline" size="sm" disabled={disabled||index===0} aria-label={'Mover foto '+(index+1)+' antes'} onClick={()=>move(index,index-1)}>Antes</Button><Button type="button" variant="outline" size="sm" disabled={disabled||index===photos.length-1} aria-label={'Mover foto '+(index+1)+' depois'} onClick={()=>move(index,index+1)}>Depois</Button></div>
+  <Button type="button" variant="ghost" size="sm" disabled={disabled} onClick={()=>onRemove(photo)} aria-label={'Remover foto '+(index+1)}>Remover</Button>
+ </div>)}</div><Dialog open={!!viewed} onOpenChange={open=>{if(!open)setViewing(null);}}><DialogContent className="editor-photo-dialog" showCloseButton={false} onKeyDown={event=>{if(event.altKey||event.ctrlKey||event.metaKey||event.shiftKey)return;if(event.key==='ArrowLeft'||event.key==='ArrowRight'){event.preventDefault();navigate(event.key==='ArrowLeft'?-1:1);}}}><div className="editor-photo-heading"><DialogTitle>Conferir foto</DialogTitle><DialogClose asChild><Button type="button" variant="outline">Voltar às fotos</Button></DialogClose></div><DialogDescription>Foto {viewIndex+1} de {photos.length}{viewIndex===0?' · Capa do álbum':''}. Confira a imagem e a legenda antes de publicar.</DialogDescription>{viewed&&<figure><img src={'/api/media/'+viewed.id} alt={viewed.caption||'Foto '+(viewIndex+1)}/>{viewed.caption&&<figcaption>{viewed.caption}</figcaption>}</figure>}<div className="viewer-controls"><Button type="button" variant="outline" disabled={photos.length<2} onClick={()=>navigate(-1)}>Anterior</Button><span role="status">{viewIndex+1} / {photos.length}</span><Button type="button" variant="outline" disabled={photos.length<2} onClick={()=>navigate(1)}>Próxima</Button></div></DialogContent></Dialog></section>;
+}
