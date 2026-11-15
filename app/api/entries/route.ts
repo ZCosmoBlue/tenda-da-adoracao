@@ -1,11 +1,12 @@
-import { listEntries,database } from '@/lib/storage';
-import { authorize,failure,json,ApiError } from '@/lib/security';
-import { entryInput } from '@/lib/validation';
+import {listEntries,memberDatabase,databaseError} from '@/lib/storage';
+import {authorize,failure,json,ApiError} from '@/lib/security';
+import {entryInput} from '@/lib/validation';
 export const dynamic='force-dynamic';
 export async function GET(request:Request){try{const admin=new URL(request.url).searchParams.get('admin')==='1';if(admin)await authorize();return json(await listEntries(admin));}catch(e){return failure(e);}}
 export async function POST(request:Request){try{
- const user=await authorize(request);if(Number(request.headers.get('content-length'))>10000)throw new ApiError(413,'Formulário muito grande.');
- const v=entryInput(await request.json()); const id=crypto.randomUUID(),now=new Date().toISOString();
- await database().prepare('INSERT INTO entries (id,kind,title,description,date,location,status,created_by,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?,?,?)').bind(id,v.kind,v.title,v.description,v.date,v.location,'draft',user.userId,now,now).run();
- return json({id});
+ const user=await authorize(request);
+ const raw=await request.text();if(raw.length>10000)throw new ApiError(413,'Formulário muito grande.');
+ const v=entryInput(JSON.parse(raw)),db=await memberDatabase();
+ const {data,error}=await db.from('church_entries').insert({...v,date:v.date||null,status:'draft',created_by:user.userId}).select('id').single();
+ databaseError(error);return json(data);
 }catch(e){return failure(e);}}

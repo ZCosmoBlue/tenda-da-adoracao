@@ -1,39 +1,24 @@
 # Publicação na Cloudflare
 
-> Publicação pausada. Este roteiro usa R2, ainda não habilitado. A alternativa gratuita para fotos precisa ser implementada antes de substituir este roteiro. Veja LANCAMENTO.md.
+A publicação continua pausada até a revisão final. O Worker usa Supabase Auth/Postgres/Storage; não exige D1 nem assinatura R2.
 
-Este projeto usa Workers, D1 (`DB`) e R2 (`BUCKET`). O banco e as fotos locais não são copiados automaticamente para a conta Cloudflare. Antes de migrar dados existentes, confira a origem e faça backup.
-
-## Preparar a conta
-
-No terminal da pasta do projeto:
+## Preparar
 
 ```powershell
-npx wrangler login
-npx wrangler whoami
+npx.cmd wrangler login
+npm.cmd run build
+node scripts/prepare-cloudflare.mjs
+npx.cmd wrangler deploy --dry-run --config dist/server/wrangler.cloudflare.json
 ```
 
-Na primeira publicação, crie os recursos abaixo apenas se ainda não existirem. O R2 precisa estar habilitado na conta; confira as condições no painel da Cloudflare antes de habilitá-lo.
+Antes de divulgar o site, configure SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY no Worker. A .dev.vars é local e não é enviada automaticamente. A compilação usa apenas variáveis de execução, não service_role. O script de preparação não inclui os valores dessas variáveis.
+
+A publicação efetiva é:
 
 ```powershell
-npx wrangler d1 create tenda-da-adoracao-db
-npx wrangler r2 bucket create tenda-da-adoracao-fotos
+npx.cmd wrangler deploy --config dist/server/wrangler.cloudflare.json
 ```
 
-Guarde o `database_id` retornado. Para cada nova versão:
+Depois, configure as variáveis no painel Cloudflare ou pelo comando wrangler secret put para cada nome, sem colocar valores no Git. Teste a página pública, login, autorização, uma publicação e foto na hospedagem real antes de divulgar. Para links de recuperação/convite, quando implementados, inclua o endereço final na configuração de redirecionamentos do Supabase.
 
-```powershell
-npm run build
-node scripts/prepare-cloudflare.mjs ID_REAL_DO_BANCO
-npx wrangler d1 migrations apply DB --remote --config dist/server/wrangler.cloudflare.json
-npx wrangler deploy --dry-run --config dist/server/wrangler.cloudflare.json
-npx wrangler deploy --config dist/server/wrangler.cloudflare.json
-```
-
-O último comando retorna o endereço público `workers.dev`. Confira a página inicial, as chaves Pix, o login e uma publicação de teste antes de divulgar.
-
-## Acesso administrativo
-
-O login agora usa exclusivamente Supabase. Configure SUPABASE_URL e SUPABASE_PUBLISHABLE_KEY no ambiente do Worker, aplique o SQL de acesso e homologue uma conta autorizada. OWNER_EMAIL e ADMIN_SETUP_TOKEN não são mais utilizados. Veja SUPABASE.md.
-
-As alterações no GitHub não publicam automaticamente na Cloudflare.
+O banco D1 criado anteriormente não é usado e não foi apagado. Os dados locais antigos foram preservados. Atualizar o GitHub não publica automaticamente na Cloudflare.

@@ -1,36 +1,44 @@
-# Migração dos acessos para Supabase
+# Supabase — Tenda da Adoração
 
-Projeto da igreja: `auxerealyxqvyecmueor`.
+Projeto: `auxerealyxqvyecmueor`.
 
-## Etapa atual
+## Serviços em uso
 
-O proprietário criou a tabela `church_members` com RLS e vinculou sua conta Auth à função `owner`. O código contém integração de login, renovação de cookies, verificação de sessão, logout, alteração de senha e autorização/bloqueio de editoras. O login é exclusivamente Supabase. Não há seleção de provedor nem fallback para credenciais antigas. Sem configuração válida, o acesso é negado.
+- Auth: login exclusivo, cookies HttpOnly, renovação de sessão, logout e troca de senha.
+- Postgres: church_members, church_entries, church_photos, church_settings.
+- Storage: bucket privado church-photos, imagens JPG/PNG/WebP de até 8 MB; o painel compacta antes do envio.
+- Limites de ações administrativas: church_private.request_limits, sem acesso direto por visitantes ou usuários. Login usa os limites do Supabase Auth.
 
-Antes de ativar, execute `supabase/setup-access.sql` no SQL Editor do projeto correto. Ele preserva contas e senhas e cria funções de acesso. O resultado final deve conter quatro funções públicas, sem permissão de execução para `anon` e com execução para `authenticated`. As funções privilegiadas ficam no esquema não exposto `church_private`, verificando usuário, sessão atual, e-mail confirmado e permissão atual no banco.
+O código não usa mais D1 ou R2. O banco local antigo foi preservado para consulta/backup, mas não é a fonte de conteúdo. Na migração, havia zero álbuns/fotos locais; as configurações da igreja foram copiadas sem sobrescrever dados existentes no destino. Isso não representa migração automática de conteúdo de outras hospedagens.
 
-## Configuração local e hospedagem
+## Configuração
 
-Defina em `.dev.vars` local ou no ambiente da hospedagem:
+Em .dev.vars local e no ambiente da hospedagem:
 
 ```dotenv
 SUPABASE_URL=https://SEU_PROJETO.supabase.co
 SUPABASE_PUBLISHABLE_KEY=sb_publishable_SUA_CHAVE
 ```
 
-Não use chave secreta/service_role no navegador. A implementação usa somente a chave publicável e a sessão da pessoa autenticada. Reinicie o servidor após alterar as variáveis. No modo Supabase, links de ativação antigos retornam 410 e o cookie antigo não autoriza o painel.
+A implementação usa a chave publicável e a sessão do usuário, sem service_role. Não há seleção de provedor nem retorno ao login antigo. As contas precisam existir no Supabase Auth e ter church_members ativo. O botão Autorizar editora permite autorizar uma conta já criada em Authentication → Users; não envia convite automaticamente.
 
-## Homologação necessária
+## Permissões
 
-1. Entrar com a senha definida em Authentication / Users, sem compartilhá-la no chat.
-2. Confirmar que o proprietário vê configurações e pessoas autorizadas.
-3. Cadastrar uma conta de editora no Auth e autorizar seu e-mail no painel. Nesta etapa, a criação da conta Auth é feita no Supabase; o botão do site autoriza uma conta existente e não envia convite por e-mail.
-4. Confirmar que a editora publica, mas não gerencia contas/configurações.
-5. Bloquear a editora e verificar que sua sessão perde acesso. Reativá-la exige novo login.
-6. Testar logout, renovação de sessão e troca de senha; não apenas a compilação.
-7. Homologar o acesso positivo com a senha do Supabase. A conta e a sessão legadas do banco local foram removidas por solicitação do proprietário; os dados de conteúdo foram preservados.
+RLS e privilégios limitam leitura pública a publicações publicadas/encerradas. Rascunhos e arquivos de rascunhos exigem uma sessão válida de membro autorizado. Somente owner modifica configurações e gerencia editoras. O servidor e as funções consultam a permissão atual e auth.sessions; user_metadata não autoriza ações.
 
-## Limites desta etapa
+A lista de fotos é reordenada em uma transação; listas desatualizadas são recusadas. O limite de 40 fotos é verificado no banco com bloqueio da publicação, incluindo inserções concorrentes. Avisos desativados/expirados são removidos do retorno público das configurações.
 
-Álbuns, eventos, configurações e contadores de tentativas ainda usam D1; fotos ainda usam R2. Essa etapa migra os acessos, não conclui a migração de dados/arquivos. A recuperação por e-mail e os convites automáticos precisam de configuração e testes próprios. Não publicar como migração completa.
+## SQL aplicado
 
-Verificações locais: `node scripts/test-supabase-access.mjs`, `node node_modules/typescript/bin/tsc --noEmit`, `npm.cmd run build`. Os testes locais não substituem a execução do SQL e a homologação com contas reais.
+- setup-access.sql: funções de acesso sobre church_members já criado.
+- setup-content.sql: fonte da migração remota church_content_and_private_storage. Executar apenas uma vez em uma base preparada; já aplicado neste projeto.
+- restrict-internal-helper.sql: remove execução pública do helper interno rls_auto_enable.
+- test-content-rls.sql: testes com contas, sessões e conteúdo temporários dentro de uma transação desfeita com ROLLBACK. Não deixa dados de teste.
+
+## Verificações em 15/11/2026
+
+Tipos, compilação, teste unitário de autorização e simulação de deploy passaram. Testes reais no Postgres confirmaram privacidade de rascunhos, leitura pública de publicações, políticas de Storage, limites de editoras, bloqueio, sessão revogada, limite de fotos, reordenação e edição de configurações pelo proprietário. Fixtures foram revertidas.
+
+O proprietário confirmou entrada no painel, envio de foto e exclusão da foto pelo painel. Ainda falta homologar todos os fluxos visuais em celular, recuperação por e-mail, convite automático e comportamento de renovação prolongada de sessão.
+
+O advisor mantém aviso sobre proteção contra senhas vazadas desativada. Não foi alterado o plano nem contratado recurso pago. A informação de RLS sem política em request_limits é intencional: só a função privada controlada acessa a tabela.

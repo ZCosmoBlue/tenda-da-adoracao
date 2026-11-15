@@ -1,11 +1,12 @@
-import {database} from '@/lib/storage';
+import {memberDatabase,databaseError} from '@/lib/storage';
 import {authorize,failure,json,ApiError} from '@/lib/security';
 import {entryInput} from '@/lib/validation';
-type Context={params:Promise<{id:string}>};
-export async function PUT(request:Request,{params}:Context){try{
- await authorize(request);const {id}=await params;const v=entryInput(await request.json());const db=database();
- const old=await db.prepare('SELECT kind FROM entries WHERE id=?').bind(id).first<{kind:string}>();if(!old)throw new ApiError(404,'Publicação não encontrada.');
+export async function PUT(request:Request,{params}:{params:Promise<{id:string}>}){try{
+ await authorize(request);const {id}=await params;const raw=await request.text();if(raw.length>10000)throw new ApiError(413,'Formulário muito grande.');
+ const v=entryInput(JSON.parse(raw)),db=await memberDatabase();
+ const {data:old,error:readError}=await db.from('church_entries').select('kind').eq('id',id).maybeSingle();databaseError(readError);
+ if(!old)throw new ApiError(404,'Publicação não encontrada.');
  if(old.kind!==v.kind)throw new ApiError(400,'O tipo da publicação não pode mudar.');
- if(v.kind==='album'&&v.status==='published') {const count=await db.prepare('SELECT COUNT(*) AS n FROM photos WHERE entry_id=?').bind(id).first<{n:number}>();if(!count?.n)throw new ApiError(400,'Adicione pelo menos uma foto antes de publicar o álbum.');}
- await db.prepare('UPDATE entries SET title=?,description=?,date=?,location=?,status=?,updated_at=? WHERE id=?').bind(v.title,v.description,v.date,v.location,v.status,new Date().toISOString(),id).run();return json({id});
+ const {data,error}=await db.from('church_entries').update({title:v.title,description:v.description,date:v.date||null,location:v.location,status:v.status}).eq('id',id).select('id').maybeSingle();
+ databaseError(error);if(!data)throw new ApiError(404,'Publicação não encontrada.');return json(data);
 }catch(e){return failure(e);}}

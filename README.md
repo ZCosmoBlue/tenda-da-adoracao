@@ -16,11 +16,10 @@ Requer Node.js >=22.13.
 
 ```powershell
 npm.cmd ci
-npm.cmd run db:setup
 npm.cmd run dev
 ```
 
-As migrações D1 ainda são necessárias para conteúdo e limites de tentativas. As tabelas históricas de autenticação não são mais lidas para conceder acesso. O banco local teve contas/sessões legadas removidas a pedido do proprietário, sem alterar conteúdo.
+O conteúdo e as fotos usam Supabase Postgres e Storage. D1 e R2 não são necessários. As fontes SQL aplicadas e os testes estão em supabase/. Veja SUPABASE.md.
 
 ## Recursos
 
@@ -38,4 +37,4 @@ A homologação com proprietário/editora e a renovação de sessão devem ser v
 
 ## Publicação
 
-A publicação está pausada. Login já usa Supabase; dados ainda usam D1 e fotos R2. A migração de dados e fotos para Supabase está pendente. Consulte `LANCAMENTO.md` e `CLOUDFLARE.md`. Atualizar o GitHub não publica automaticamente na hospedagem.
+A publicação está pausada. Login, dados e fotos usam Supabase. O proprietário confirmou login, envio e exclusão de foto. A revisão final no celular e a publicação ainda estão pendentes. Consulte `LANCAMENTO.md` e `CLOUDFLARE.md`. Atualizar o GitHub não publica automaticamente na hospedagem.
