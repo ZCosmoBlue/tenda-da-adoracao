@@ -4,12 +4,12 @@ import {supabaseConfig} from './supabase-config';
 import type {Account} from './auth';
 
 // A fresh client per request. Tokens never enter response JSON or localStorage.
-export async function supabaseServer(request?:Request){
+export async function supabaseServer(request?:Request,cookieName?:string){
  const {url,key}=supabaseConfig();
  const incoming=request?.headers??await headers();
  const responseHeaders=new Headers({'Cache-Control':'private, no-store'});
  const client=createServerClient(url,key,{
-  cookieOptions:{httpOnly:true,sameSite:'lax',path:'/',secure:request?new URL(request.url).protocol==='https:':true},
+  cookieOptions:{...(cookieName?{name:cookieName}:{}),httpOnly:true,sameSite:'lax',path:'/',secure:request?new URL(request.url).protocol==='https:':true},
   cookies:{
    getAll:()=>parseCookieHeader(incoming.get('cookie')??'').map(c=>({name:c.name,value:c.value??''})),
    setAll(cookies,cacheHeaders){
