@@ -49,3 +49,5 @@ next-env.d.ts
 !.env.example
 
 *.tsbuildinfo
+/backups/
+tenda-backup-*.json
